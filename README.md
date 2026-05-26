@@ -1,2 +1,2 @@
-# Payments_E2E_Automation
-# Payments_E2E_Automation
+# AI Automation practise for WEB and API
+
