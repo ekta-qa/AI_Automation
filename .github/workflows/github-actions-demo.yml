@@ -1,18 +1,46 @@
-name: GitHub Actions Demo
-run-name: ${{ github.actor }} is testing out GitHub Actions 🚀
-on: [push]
+name: Playwright UI & API 
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
 jobs:
-  Explore-GitHub-Actions:
+  automation-suite:
+    timeout-minutes: 15
     runs-on: ubuntu-latest
+
     steps:
-      - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
-      - run: echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
-      - run: echo "🔎 The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
-      - name: Check out repository code
-        uses: actions/checkout@v6
-      - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
-      - run: echo "🖥️ The workflow is now ready to test your code on the runner."
-      - name: List files in the repository
-        run: |
-          ls ${{ github.workspace }}
-      - run: echo "🍏 This job's status is ${{ job.status }}."
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: 20
+        cache: 'npm'
+
+    - name: Install Dependencies
+      run: npm ci
+
+    - name: Install Playwright Operating System Dependencies & Browsers
+      run: npx playwright install --with-deps
+
+    # Step 1: Execute the 3 API scenarios (Fast feedback loop)
+    - name: Run API Tests (Fake Store API)
+      run: npx playwright test tests/fakestoreapi.spec.ts/
+
+    # Step 2: Execute the 6 UI scenarios (Sauce Demo web tests)
+    - name: Run UI Tests (Sauce Demo)
+      run: npx playwright test tests/saucedemo.spec.ts/
+
+    # Step 3: Archive the combined HTML visual execution report
+    - name: Upload Test Report Artifact
+      uses: actions/upload-artifact@v4
+      if: ${{ !cancelled() }}
+      with:
+        name: playwright-execution-report
+        path: playwright-report/
+        retention-days: 7
