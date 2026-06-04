@@ -1,6 +1,7 @@
 import { test, expect, APIRequestContext } from '@playwright/test';
 
 const API_BASE_URL = 'https://fakestoreapi.com';
+const API_REQUEST_TIMEOUT = 60_000;
 
 test.describe('Fake Store API Automation', () => {
   let request: APIRequestContext;
@@ -8,6 +9,10 @@ test.describe('Fake Store API Automation', () => {
   test.beforeAll(async ({ playwright }) => {
     request = await playwright.request.newContext({
       baseURL: API_BASE_URL,
+      timeout: API_REQUEST_TIMEOUT,
+      extraHTTPHeaders: {
+        'Accept': 'application/json',
+      },
     });
   });
 
@@ -19,11 +24,13 @@ test.describe('Fake Store API Automation', () => {
     test('TC_1 Login with valid credentials returns 200 and valid token', async () => {
       const response = await request.post('/auth/login', {
         data: {
-          username: 'mor_232',
+          username: 'mor_2314',
           password: '83r5^_',
         },
+        timeout: API_REQUEST_TIMEOUT,
       });
 
+      expect(response.ok()).toBeTruthy();
       // Assert HTTP status code is 2xx (201 Created or 200 OK)
       expect(response.status()).toBeGreaterThanOrEqual(200);
       expect(response.status()).toBeLessThan(300);
@@ -83,8 +90,10 @@ test.describe('Fake Store API Automation', () => {
 
       const response = await request.post('/carts', {
         data: cartPayload,
+        timeout: API_REQUEST_TIMEOUT,
       });
 
+      expect(response.ok()).toBeTruthy();
       // Assert HTTP status code is 2xx (201 Created or 200 OK)
       expect(response.status()).toBeGreaterThanOrEqual(200);
       expect(response.status()).toBeLessThan(300);
